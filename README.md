@@ -1,4 +1,4 @@
-# PORTOFOLIU IT-SCHOOL 
+## PORTOFOLIU IT-SCHOOL 
 # Joc de întrebări generale
 Acesta este un simplu joc de întrebări generale scris în Python folosind biblioteca Tkinter pentru interfața grafică.
 
