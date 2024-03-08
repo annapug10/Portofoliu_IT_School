@@ -34,7 +34,7 @@ class Joc:
             Intrebare("Care este cel mai mare ocean al lumii?", "Pacific"),
             Intrebare("Cine a scris 'Romeo și Julieta'?", "William Shakespeare"),
             Intrebare("Care este cel mai lung râu din lume?", "Nilul"),
-            Intrebare("Câte continente există pe Pământ?", "Șapte"),
+            Intrebare("Câte continente există pe Pământ?", ["Șapte", "sapte", "Sapte", "7"]),
             Intrebare("Care este elementul chimic cu simbolul 'Fe'?", "Fier"),
             Intrebare("Câte zile are un an bisect?", "366"),
             Intrebare("Cine a pictat Mona Lisa?", "Leonardo da Vinci"),
@@ -84,10 +84,30 @@ class Joc:
         self.verifica_raspuns()
 
         # Dacă răspunsul este corect, trecem automat la următoarea întrebare
-        if self.camp_raspuns.get().strip().lower() == self.raspuns_corect.lower():
+        if isinstance(self.raspuns_corect, list):
+            raspuns_utilizator = self.camp_raspuns.get().strip().lower()
+            if raspuns_utilizator in map(str.lower, self.raspuns_corect):
+                self.punctaj += 10
+                self.eticheta_punctaj.config(text=f"Punctaj: {self.punctaj}")
+                self.urmatoarea_intrebare()
+            else:
+                messagebox.showerror("Răspuns Incorect", f"Răspunsul corect este: {', '.join(self.raspuns_corect)}")
+                # Scade punctajul pentru un răspuns greșit
+                self.punctaj -= 5
+        elif self.camp_raspuns.get().strip().lower() == self.raspuns_corect.lower():
             self.punctaj += 10
             self.eticheta_punctaj.config(text=f"Punctaj: {self.punctaj}")
             self.urmatoarea_intrebare()
+        else:
+            messagebox.showerror("Răspuns Incorect", f"Răspunsul corect este: {self.raspuns_corect}")
+            # Scade punctajul pentru un răspuns greșit
+            self.punctaj -= 5
+
+        # Asigură că punctajul nu poate fi mai mic decât 0
+        if self.punctaj < 0:
+            self.punctaj = 0
+
+        self.eticheta_punctaj.config(text=f"Punctaj: {self.punctaj}")
 
     def verifica_raspuns(self):
         raspuns_utilizator = self.camp_raspuns.get().strip()
@@ -95,14 +115,6 @@ class Joc:
         if not raspuns_utilizator:
             messagebox.showwarning("Răspuns Necompletat", "Te rugăm să introduci un răspuns!")
             return
-
-        if raspuns_utilizator.lower() == self.raspuns_corect.lower():
-            messagebox.showinfo("Răspuns Corect", "Felicitări, răspunsul este corect!")
-            self.punctaj += 10
-        else:
-            messagebox.showerror("Răspuns Incorect", f"Răspunsul corect este: {self.raspuns_corect}")
-
-        self.eticheta_punctaj.config(text=f"Punctaj: {self.punctaj}")
 
 # Funcția principală care inițializează jocul
 def main():
