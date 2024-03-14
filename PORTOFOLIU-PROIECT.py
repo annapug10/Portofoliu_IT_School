@@ -23,18 +23,26 @@ class Joc:
         self.frame_bun_venit = tk.Frame(self.master)
         self.frame_bun_venit.pack(pady=50)
 
-        self.label_bun_venit = tk.Label(self.frame_bun_venit, text="Bine ai venit la joc!", font=("Helvetica", 16))
-        self.label_bun_venit.pack(pady=10)
+        self.label_nume = tk.Label(self.frame_bun_venit, text="Introdu numele tău:", font=("Helvetica", 12))
+        self.label_nume.pack()
+
+        self.entry_nume = tk.Entry(self.frame_bun_venit, font=("Helvetica", 12))
+        self.entry_nume.pack(pady=5)
 
         self.buton_start = tk.Button(self.frame_bun_venit, text="Vrei să începem?", command=self.incepe_joc)
         self.buton_start.pack(pady=5)
 
     def incepe_joc(self):
+        nume_jucator = self.entry_nume.get().strip()
+        if not nume_jucator:
+            messagebox.showwarning("Nume Necompletat", "Te rugăm să introduci numele tău!")
+            return
+
         self.frame_bun_venit.destroy()
         self.intrebari = [
             Intrebare("Ce este capitala Franței?", "Paris"),
             Intrebare("Care este cel mai mare ocean al lumii?", "Pacific"),
-            Intrebare("Cine a scris 'Romeo și Julieta'?", "William Shakespeare"),
+            Intrebare("Cine a scris 'Romeo și Julieta'?", ["William Shakespeare", "William"]),
             Intrebare("Care este cel mai lung râu din lume?", "Nilul"),
             Intrebare("Câte continente există pe Pământ?", ["Șapte", "sapte", "Sapte", "7"]),
             Intrebare("Care este elementul chimic cu simbolul 'Fe'?", "Fier"),
@@ -45,11 +53,15 @@ class Joc:
 
         self.punctaj = 0
         self.index_intrebare_curenta = -1
+        self.nume_jucator = nume_jucator
 
         self.creeaza_interfata()
 
+        # Conectăm metoda `verifica_si_urmatoarea` la evenimentul Enter
+        self.camp_raspuns.bind("<Return>", self.verifica_si_urmatoarea)
+
     def creeaza_interfata(self):
-        self.eticheta_intrebare = tk.Label(self.master, text="", font=("Helvetica", 12))
+        self.eticheta_intrebare = tk.Label(self.master, text=f"{self.nume_jucator}, răspunde la următoarele întrebări:", font=("Helvetica", 12))
         self.eticheta_intrebare.pack(pady=10)
 
         self.camp_raspuns = tk.Entry(self.master, font=("Helvetica", 12))
@@ -77,7 +89,7 @@ class Joc:
     def urmatoarea_intrebare(self):
         self.index_intrebare_curenta += 1
         if self.index_intrebare_curenta >= len(self.intrebari):
-            messagebox.showinfo("Sfârșitul Jocului", f"Ai răspuns la toate întrebările!\nPunctajul tău final este: {self.punctaj}")
+            messagebox.showinfo("Sfârșitul Jocului", f"{self.nume_jucator}, ai răspuns la toate întrebările!\nPunctajul tău final este: {self.punctaj}")
             self.master.destroy()
             return
 
@@ -95,7 +107,7 @@ class Joc:
         self.cronometru = threading.Thread(target=self.rulare_cronometru)
         self.cronometru.start()
 
-    def verifica_si_urmatoarea(self, event):
+    def verifica_si_urmatoarea(self, event=None):
         self.verifica_raspuns()
 
         # Oprim cronometrul după verificarea răspunsului
@@ -120,7 +132,7 @@ class Joc:
                 self.punctaj += 10
                 messagebox.showinfo("Răspuns Corect!", "Felicitări, răspunsul este corect!")
             else:
-                        messagebox.showerror("Răspuns Incorect!", f"Răspunsul corect este: {', '.join(self.raspuns_corect)}")
+                messagebox.showerror("Răspuns Incorect!", f"Răspunsul corect este: {', '.join(self.raspuns_corect)}")
         elif raspuns_utilizator.lower() == self.raspuns_corect.lower():
             self.punctaj += 10
             messagebox.showinfo("Răspuns Corect!", "Felicitări, răspunsul este corect!")
