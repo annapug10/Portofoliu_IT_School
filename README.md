@@ -1,6 +1,7 @@
 ## PORTOFOLIU IT-SCHOOL 
 # Joc de întrebări generale
-Acesta este un simplu joc de întrebări generale scris în Python folosind biblioteca Tkinter pentru interfața grafică.
+## CERINTA 
+Scrieți un program Python care să implementeze un joc de întrebări generale utilizând biblioteca Tkinter pentru a crea o interfață grafică.
 
 ## Cum să rulezi proiectul:
 
