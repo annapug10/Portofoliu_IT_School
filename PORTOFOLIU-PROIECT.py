@@ -1,8 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
 import random
-import threading
-import time
 
 # Clasa pentru a reprezenta întrebările și răspunsurile asociate
 class Intrebare:
@@ -15,7 +13,7 @@ class Joc:
     def __init__(self, master):
         self.master = master
         self.master.title("Joc de întrebări generale")
-        self.master.geometry("400x300")
+        self.master.geometry("500x400")
 
         self.bun_venit()
 
@@ -29,7 +27,7 @@ class Joc:
         self.entry_nume = tk.Entry(self.frame_bun_venit, font=("Helvetica", 12))
         self.entry_nume.pack(pady=5)
 
-        self.buton_start = tk.Button(self.frame_bun_venit, text="Vrei să începem?", command=self.incepe_joc)
+        self.buton_start = tk.Button(self.frame_bun_venit, text="Vrei să începem?", command=self.incepe_joc, font=("Helvetica", 12))
         self.buton_start.pack(pady=5)
 
     def incepe_joc(self):
@@ -61,30 +59,18 @@ class Joc:
         self.camp_raspuns.bind("<Return>", self.verifica_si_urmatoarea)
 
     def creeaza_interfata(self):
-        self.eticheta_intrebare = tk.Label(self.master, text=f"{self.nume_jucator}, răspunde la următoarele întrebări:", font=("Helvetica", 12))
+        self.eticheta_intrebare = tk.Label(self.master, text=f"{self.nume_jucator}, răspunde la următoarele întrebări:", font=("Helvetica", 14, "bold"))
         self.eticheta_intrebare.pack(pady=10)
 
         self.camp_raspuns = tk.Entry(self.master, font=("Helvetica", 12))
         self.camp_raspuns.pack(pady=5)
 
-        self.eticheta_punctaj = tk.Label(self.master, text="Punctaj: 0", font=("Helvetica", 12))
+        self.eticheta_punctaj = tk.Label(self.master, text="Punctaj: 0", font=("Helvetica", 12, "italic"))
         self.eticheta_punctaj.pack()
-
-        self.eticheta_timp_ramas = tk.Label(self.master, text="", font=("Helvetica", 12))
-        self.eticheta_timp_ramas.pack()
 
         self.culori = ['lightblue', 'lightgreen', 'lightyellow', 'lightcoral', 'lightpink']
 
         self.urmatoarea_intrebare()
-
-    def rulare_cronometru(self):
-        timp_ramas = 10  # Ajustează timpul limită aici
-        while timp_ramas > 0:
-            self.eticheta_timp_ramas.config(text=f"Timp rămas: {timp_ramas} secunde")
-            time.sleep(1)
-            timp_ramas -= 1
-        messagebox.showinfo("Timpul a expirat!", "Timpul a expirat! Trecem automat la următoarea întrebare.")
-        self.verifica_raspuns()
 
     def urmatoarea_intrebare(self):
         self.index_intrebare_curenta += 1
@@ -103,18 +89,8 @@ class Joc:
         self.eticheta_intrebare.config(text=self.intrebare_curenta)
         self.camp_raspuns.delete(0, tk.END)
 
-        # Pornim cronometrul pentru întrebarea curentă
-        self.cronometru = threading.Thread(target=self.rulare_cronometru)
-        self.cronometru.start()
-
     def verifica_si_urmatoarea(self, event=None):
         self.verifica_raspuns()
-
-        # Oprim cronometrul după verificarea răspunsului
-        if self.cronometru.is_alive():
-            self.cronometru.join()
-
-        self.eticheta_timp_ramas.config(text="")
 
         # Trecem automat la următoarea întrebare
         self.urmatoarea_intrebare()
@@ -126,18 +102,24 @@ class Joc:
             messagebox.showwarning("Răspuns Necompletat", "Te rugăm să introduci un răspuns!")
             return
 
-        # Verificăm răspunsul și acordăm punctajul corespunzător
+        # Verificăm răspunsul și acordăm sau scădem punctele corespunzător
         if isinstance(self.raspuns_corect, list):
             if raspuns_utilizator.lower() in map(str.lower, self.raspuns_corect):
                 self.punctaj += 10
                 messagebox.showinfo("Răspuns Corect!", "Felicitări, răspunsul este corect!")
-            else:
-                messagebox.showerror("Răspuns Incorect!", f"Răspunsul corect este: {', '.join(self.raspuns_corect)}")
+                self.eticheta_punctaj.config(text=f"Punctaj: {self.punctaj}")  # Actualizează eticheta de punctaj
+                self.urmatoarea_intrebare()  # Trecem la următoarea întrebare doar dacă răspunsul este corect
+                return
         elif raspuns_utilizator.lower() == self.raspuns_corect.lower():
             self.punctaj += 10
             messagebox.showinfo("Răspuns Corect!", "Felicitări, răspunsul este corect!")
-        else:
-            messagebox.showerror("Răspuns Incorect!", f"Răspunsul corect este: {self.raspuns_corect}")
+            self.eticheta_punctaj.config(text=f"Punctaj: {self.punctaj}")  # Actualizează eticheta de punctaj
+            self.urmatoarea_intrebare()  # Trecem la următoarea întrebare doar dacă răspunsul este corect
+            return
+
+        # Dacă ajungi aici, înseamnă că răspunsul este greșit
+        self.punctaj -= 5  # Scădem 5 puncte pentru răspuns incorect
+        messagebox.showerror("Răspuns Incorect!", f"Răspunsul corect este: {self.raspuns_corect}")
 
         # Actualizăm eticheta de punctaj
         self.eticheta_punctaj.config(text=f"Punctaj: {self.punctaj}")
@@ -158,3 +140,4 @@ def main():
 # Verificăm dacă scriptul este rulat direct sau importat ca modul
 if __name__ == "__main__":
     main()
+
